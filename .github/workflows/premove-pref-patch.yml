@@ -1,0 +1,96 @@
+name: Premove preference patch
+
+on: [push]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Apply compatibility-safe premove preference patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def patch(path, replacements):
+              p = Path(path)
+              s = p.read_text()
+              for old, new in replacements:
+                  count = s.count(old)
+                  if count != 1:
+                      raise SystemExit(f'{path}: expected one occurrence, found {count}: {old!r}')
+                  s = s.replace(old, new, 1)
+              p.write_text(s)
+
+          patch('modules/pref/src/main/Pref.scala', [
+              ('    premove: Boolean,\n    animation: Int,',
+               '    premove: Boolean,\n    multiplePremove: Boolean,\n    animation: Int,'),
+              ('  object BooleanPref:\n    val verify = (v: Int) => v == 0 || v == 1\n\n',
+               '  object BooleanPref:\n    val verify = (v: Int) => v == 0 || v == 1\n\n'
+               '  object PremoveMode:\n'
+               '    val DISABLED = 0\n'
+               '    val SINGLE = 1\n'
+               '    val MULTIPLE = 2\n\n'
+               '    val choices = Seq(\n'
+               '      MULTIPLE -> "Multiple",\n'
+               '      SINGLE -> "One",\n'
+               '      DISABLED -> "Disabled"\n'
+               '    )\n\n'),
+              ('    premove = true,\n    animation = Animation.NORMAL,',
+               '    premove = true,\n    multiplePremove = false,\n    animation = Animation.NORMAL,'),
+          ])
+
+          patch('modules/pref/src/main/PrefHandlers.scala', [
+              ('        premove = r.getD("premove", d.premove),\n        animation = r.getD("animation", d.animation),',
+               '        premove = r.getD("premove", d.premove),\n        multiplePremove = r.getD("multiplePremove", d.multiplePremove),\n        animation = r.getD("animation", d.animation),'),
+              ('        "premove" -> o.premove,\n        "animation" -> o.animation,',
+               '        "premove" -> o.premove,\n        "multiplePremove" -> o.multiplePremove,\n        "animation" -> o.animation,'),
+          ])
+
+          patch('modules/pref/src/main/PrefForm.scala', [
+              ('    val premove = "premove" -> booleanNumber',
+               '    val premove = "premove" -> checkedNumber(Pref.PremoveMode.choices)'),
+              ('        premove = behavior.premove == 1,\n        animation = display.animation,',
+               '        premove = behavior.premove != Pref.PremoveMode.DISABLED,\n        multiplePremove = behavior.premove == Pref.PremoveMode.MULTIPLE,\n        animation = display.animation,'),
+              ('          premove = if pref.premove then 1 else 0,\n          takeback = pref.takeback,',
+               '          premove =\n            if !pref.premove then Pref.PremoveMode.DISABLED\n            else if pref.multiplePremove then Pref.PremoveMode.MULTIPLE\n            else Pref.PremoveMode.SINGLE,\n          takeback = pref.takeback,'),
+          ])
+
+          patch('modules/round/src/main/JsonView.scala', [
+              ('.add("enablePremove" -> pref.premove)\n            .add("showCaptured" -> pref.captured)',
+               '.add("enablePremove" -> pref.premove)\n            .add("multiplePremove" -> pref.multiplePremove)\n            .add("showCaptured" -> pref.captured)'),
+          ])
+
+          patch('ui/round/src/interfaces.ts', [
+              ('  enablePremove: boolean;\n  highlight: boolean;',
+               '  enablePremove: boolean;\n  multiplePremove: boolean;\n  highlight: boolean;'),
+          ])
+
+          patch('ui/round/src/ground.ts', [
+              ('      maxCount: data.pref.enablePremove ? multiplePremoveLimit : 1,',
+               '      maxCount: data.pref.enablePremove && data.pref.multiplePremove ? multiplePremoveLimit : 1,'),
+          ])
+
+          patch('modules/pref/src/main/ui/AccountPref.scala', [
+              ('      val booleanChoices = translatedBooleanIntChoices\n      div(cls := "box box-pad")(',
+               '      val booleanChoices = translatedBooleanIntChoices\n'
+               '      val premoveChoices = Seq(\n'
+               '        Pref.PremoveMode.MULTIPLE -> "Multiple",\n'
+               '        Pref.PremoveMode.SINGLE -> "One",\n'
+               '        Pref.PremoveMode.DISABLED -> "Disabled"\n'
+               '      )\n'
+               '      div(cls := "box box-pad")('),
+              ('              radios(form("behavior.premove"), booleanChoices),',
+               '              radios(form("behavior.premove"), premoveChoices),'),
+          ])
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add modules/pref/src/main/Pref.scala modules/pref/src/main/PrefHandlers.scala modules/pref/src/main/PrefForm.scala modules/pref/src/main/ui/AccountPref.scala modules/round/src/main/JsonView.scala ui/round/src/interfaces.ts ui/round/src/ground.ts
+          git commit -m "Add opt-in multiple premove preference"
+          git push
