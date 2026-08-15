@@ -70,7 +70,7 @@ export function makeConfig(ctrl: RoundController): CgConfig {
     },
     premovable: {
       enabled: data.pref.enablePremove,
-      maxCount: data.pref.enablePremove ? multiplePremoveLimit : 1,
+      maxCount: data.pref.enablePremove && data.pref.multiplePremove ? multiplePremoveLimit : 1,
       showDests: data.pref.destination && !ctrl.blindfold(),
       events: {
         set: hooks.onPremove,
