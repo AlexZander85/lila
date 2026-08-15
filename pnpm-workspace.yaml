@@ -22,6 +22,7 @@ ignoredOptionalDependencies:
   - '@ox*/*-sunos-*'
 allowBuilds:
   esbuild: true
+  '@lichess-org/chessground@https://codeload.github.com/AlexZander85/chessground/tar.gz/6073eed1cef165cd0d9372073a5c45dd58a7972b': true
 patchedDependencies:
   '@toast-ui/editor@3.2.2': ui/bits/patches/@toast-ui__editor.patch
 minimumReleaseAgeExclude:
