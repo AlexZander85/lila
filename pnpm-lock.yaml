@@ -12,8 +12,8 @@ importers:
   .:
     devDependencies:
       '@lichess-org/chessground':
-        specifier: ^10.1.1
-        version: 10.1.1
+        specifier: github:AlexZander85/chessground#6073eed1cef165cd0d9372073a5c45dd58a7972b
+        version: https://codeload.github.com/AlexZander85/chessground/tar.gz/6073eed1cef165cd0d9372073a5c45dd58a7972b
       '@lichess-org/pgn-viewer':
         specifier: ^2.6.2
         version: 2.6.2
@@ -903,6 +903,11 @@ packages:
 
   '@lichess-org/chessground@10.1.1':
     resolution: {integrity: sha512-IBEs8+J64/zE8QB4NXxsvpjm/tHRjfQAdWwUh4xzqqN+RValgthWHemLnxsmtHFwuxvO4lHd+crp1ecgZxKVoQ==}
+
+  '@lichess-org/chessground@https://codeload.github.com/AlexZander85/chessground/tar.gz/6073eed1cef165cd0d9372073a5c45dd58a7972b':
+    resolution: {gitHosted: true, integrity: sha512-89Ndd2ApJ4TDT08f4yQ1GkEAKJtXk/q7PdBhyWTo57op4vPqWkjKxCf7/ZQTxBkVV5SuYsM4TLHXyQDsJC8K1A==, tarball: https://codeload.github.com/AlexZander85/chessground/tar.gz/6073eed1cef165cd0d9372073a5c45dd58a7972b}
+    version: 10.1.1
+    engines: {node: '>=22', pnpm: '11'}
 
   '@lichess-org/pgn-viewer@2.6.2':
     resolution: {integrity: sha512-QZNKVarNiuEkRGf8pM1upN9x0bMxOMeZBxYkYTBLOn7GknGNgxLhMYMQnSIS3CjOJKApv6dvXW+0VvMgnFP9lA==}
@@ -2548,6 +2553,8 @@ snapshots:
   '@kurkle/color@0.3.4': {}
 
   '@lichess-org/chessground@10.1.1': {}
+
+  '@lichess-org/chessground@https://codeload.github.com/AlexZander85/chessground/tar.gz/6073eed1cef165cd0d9372073a5c45dd58a7972b': {}
 
   '@lichess-org/pgn-viewer@2.6.2':
     dependencies:
