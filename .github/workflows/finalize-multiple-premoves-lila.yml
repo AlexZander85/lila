@@ -1,0 +1,16 @@
+name: Finalize multiple-premoves Lila
+
+'on':
+  push:
+    branches:
+      - agent/multiple-premoves-web-lila-finalize
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: bash .github/finalize-multiple-premoves-lila.sh
