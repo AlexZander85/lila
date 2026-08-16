@@ -1,0 +1,30 @@
+name: Refresh final multiple-premoves lockfile
+
+'on':
+  push:
+    branches:
+      - agent/multiple-premoves-web-lock-refresh
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - name: Commit lockfile
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pnpm-lock.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh final multiple-premoves lockfile'
+            git push
+          fi
