@@ -24,12 +24,29 @@ if old in text:
 elif new not in text:
     raise SystemExit('expected onUserMove block not found')
 path.write_text(text)
+
+path = Path('modules/pref/src/main/PrefSingleChange.scala')
+text = path.read_text()
+old = """    changing(_.premove): v =>
+      _.copy(premove = v == 1),
+"""
+new = """    changing(_.premove): v =>
+      _.copy(
+        premove = v != Pref.PremoveMode.DISABLED,
+        multiplePremove = v == Pref.PremoveMode.MULTIPLE
+      ),
+"""
+if old in text:
+    text = text.replace(old, new, 1)
+elif new not in text:
+    raise SystemExit('expected single-change premove block not found')
+path.write_text(text)
 PY
 
 git config user.name 'github-actions[bot]'
 git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-git add ui/round/src/ctrl.ts
+git add ui/round/src/ctrl.ts modules/pref/src/main/PrefSingleChange.scala
 if ! git diff --cached --quiet; then
-  git commit -m 'Clear dependent premoves after promotion'
+  git commit -m 'Handle multiple premoves in single-setting updates'
   git push
 fi
